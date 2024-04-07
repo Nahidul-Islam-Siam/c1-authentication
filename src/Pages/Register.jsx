@@ -1,10 +1,12 @@
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import { AuthContext } from "../AuthProvider/AuthProvider";
 import auth from "../firebase/firebase.config";
 
 
 const Register = () => {
-const {registerUser,} = useContext(AuthContext)
+const {registerUser, setUser} = useContext(AuthContext)
+const [error,setError] = useState('')
+const [emailError, setEmailError] = useState('')
 console.log(auth);
     const handleRegister = (e)=>{
         e.preventDefault()
@@ -13,8 +15,40 @@ console.log(auth);
         const photo = e.target.photo.value
         const password = e.target.password.value
         const confirmPassword = e.target.confirmPassword.value
-        console.log(name,email,photo,password,confirmPassword);
-        registerUser(email,password)
+      
+
+if (!/^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$/.test(email)) {
+  setEmailError('Please enter a valid email address.')
+  return
+}
+if (password.length<6) {
+  setError("Password must be 6 characters")
+  return
+}
+ if (password !== confirmPassword) {
+  setError("Passwords didn't match")
+  return
+}
+if (!/[@#%^&*]/.test(password)) {
+  setError("Please add a special character like  @, #, %, ^, &, or *.")
+  return
+}
+if(!/.*\d{2}$/.test(password)){
+  setError("Password must end with st least 2 numbers")
+  return
+}
+setError('')
+setEmailError('')
+
+
+console.log(name,email,photo,password,confirmPassword);
+registerUser(email,password)
+.then(result=>{
+  setUser(result.user)
+})
+.catch(error=>{
+  setError(error.message);
+})
     }
     return (
         <div className="hero min-h-screen  bg-base-200">
@@ -42,21 +76,29 @@ console.log(auth);
           </label>
           <input type="email" name="email" placeholder="email" className="input input-bordered" />
         </div>
+        {
+          emailError && <small className="text-red-500">{emailError}</small>
+        }
         <div className="form-control">
           <label className="label">
             <span className="label-text">Password</span>
           </label>
-          <input type="password" name="password" placeholder="password" className="input input-bordered"  />
+          <input type="text" name="password" placeholder="password" className="input input-bordered"  />
         </div>
         <div className="form-control">
           <label className="label">
             <span className="label-text">Confirm Password</span>
           </label>
-          <input type="password" name="confirmPassword" placeholder="confirm-password" className="input input-bordered"  />
+          <input type="text" name="confirmPassword" placeholder="confirm-password" className="input input-bordered"  />
+
           <label className="label">
             <a href="#" className="label-text-alt link link-hover">Forgot password?</a>
           </label>
         </div>
+        {
+          error && <small className="text-red-500">{error}</small>
+        }
+
         <div className="form-control mt-6 w-full">
           <button type="submit" className="btn btn-primary">Register</button>
         </div>
